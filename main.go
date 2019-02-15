@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -22,6 +22,8 @@ func scrapDaemon() {
 		alert, err = scraper.ScrapeUBCAlert()
 		if err == nil {
 			rss, err = feed.GenerateRSS(alert)
+		} else {
+			log.Println("[Error]", err.Error(), "@ScrapeUBCAlert()")
 		}
 	}
 }
@@ -32,14 +34,13 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
-			fmt.Println("[500]", err.Error())
 			w.Write([]byte(err.Error()))
 		} else {
 			w.Write([]byte(rss))
 		}
 	})
+	log.Println("[Info] AlertUBC is now listening at port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
-	fmt.Println("AlertUBC is now listening at port 8080")
 }
