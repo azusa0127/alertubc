@@ -50,16 +50,13 @@ func ScrapeUBCAlert() (rv *UBCAlertMessage, err error) {
 		if messageNode := alertContent.Find("div.alert-message"); messageNode != nil {
 			if spanNode := messageNode.Find("span"); spanNode != nil {
 				rv.Category = spanNode.Text()
-				spanNode.Remove()
 			}
 
 			if strongNode := messageNode.Find("strong"); strongNode != nil {
 				rv.Title = strongNode.Text()
-				strongNode.Remove()
 			}
-
-			rv.Message = messageNode.Text()
-			rv.Message = rv.Message[:strings.LastIndex(rv.Message, ".")]
+			msg := messageNode.Text()
+			rv.Message = strings.Replace(msg, " Due to current weather conditions, members of the UBC community are reminded of UBC’s Winter Weather Conditions Protocol. Drive safely and wear appropriate footwear when travelling around campus. For information on transit, visit Translink Alerts & Advisories.", "",1)
 		}
 	}
 	return
