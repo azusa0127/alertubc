@@ -56,7 +56,8 @@ func ScrapeUBCAlert() (rv *UBCAlertMessage, err error) {
 				rv.Title = strongNode.Text()
 			}
 			msg := messageNode.Text()
-			rv.Message = strings.Replace(msg, " Due to current weather conditions, members of the UBC community are reminded of UBC’s Winter Weather Conditions Protocol. Drive safely and wear appropriate footwear when travelling around campus. For information on transit, visit Translink Alerts & Advisories.", "",1)
+
+			rv.Message = strings.Replace(msg[:strings.LastIndex(msg, ".")], " Due to current weather conditions, members of the UBC community are reminded of UBC’s Winter Weather Conditions Protocol. Drive safely and wear appropriate footwear when travelling around campus. For information on transit, visit Translink Alerts & Advisories.", "",1)
 		}
 	}
 	return
