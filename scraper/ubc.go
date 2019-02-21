@@ -116,20 +116,18 @@ func ScrapeUBCAlert() (rv *UBCAlertMessage, err error) {
 	if err != nil {
 		return
 	}
-	if alertContent := doc.Find("div.alert-content").First(); alertContent != nil {
+
+	doc.Find("div.alert-content").First().Each(func(_ int, alertContent *goquery.Selection) {
 		rv = &UBCAlertMessage{Time: time.Now()}
-		if timeNode := alertContent.Find("div.alert-date > em"); timeNode != nil {
+		alertContent.Find("div.alert-date > em").Each(func(_ int, timeNode *goquery.Selection) {
 			rv.Time = parseTimeString(timeNode.Text())
-		}
-		if messageNode := alertContent.Find("div.alert-message"); messageNode != nil {
-			if spanNode := messageNode.Find("span"); spanNode != nil {
-				rv.Category = spanNode.Text()
-			}
-			if strongNode := messageNode.Find("strong"); strongNode != nil {
-				rv.Title = strongNode.Text()
-			}
+		})
+		alertContent.Find("div.alert-message").Each(func(_ int, messageNode *goquery.Selection) {
+			rv.Category = messageNode.Find("span").Text()
+			rv.Title = messageNode.Find("strong").Text()
 			rv.Message = processMessage(messageNode.Text())
-		}
-	}
+		})
+	})
+
 	return
 }
