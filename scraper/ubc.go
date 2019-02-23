@@ -78,7 +78,11 @@ func processMessage(message string) string {
 		sentence = strings.TrimSpace(sentence)
 		if !strings.HasPrefix(sentence, "Due to current weather conditions, members") &&
 			!strings.HasPrefix(sentence, "Drive safely and") &&
-			!strings.HasPrefix(sentence, "For information on transit") {
+			!strings.HasPrefix(sentence, "For information on transit") &&
+			!strings.HasPrefix(sentence, "Faculty and staff please consult") &&
+			!strings.HasPrefix(sentence, "Essential service workers are expected to remain") &&
+			!strings.HasPrefix(sentence, "Non-essential staff are expected") &&
+			!strings.HasPrefix(sentence, "Managers may contact") {
 			rv = append(rv, sentence)
 		}
 	}
@@ -96,7 +100,7 @@ var netClient = &http.Client{
 	Transport: netTransport,
 }
 
-func ScrapeUBCAlert() (rv *UBCAlertMessage, err error) {
+func ScrapeUBCAlert() (rv []*UBCAlertMessage, err error) {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancelCtx()
 	req, _ := http.NewRequest("GET", ubcURL, nil)
@@ -117,15 +121,17 @@ func ScrapeUBCAlert() (rv *UBCAlertMessage, err error) {
 		return
 	}
 
+	rv = []*UBCAlertMessage{}
 	doc.Find("div.alert-content").First().Each(func(_ int, alertContent *goquery.Selection) {
-		rv = &UBCAlertMessage{Time: time.Now()}
+		m := &UBCAlertMessage{Time: time.Now()}
+		rv = append(rv, m)
 		alertContent.Find("div.alert-date > em").Each(func(_ int, timeNode *goquery.Selection) {
-			rv.Time = parseTimeString(timeNode.Text())
+			m.Time = parseTimeString(timeNode.Text())
 		})
 		alertContent.Find("div.alert-message").Each(func(_ int, messageNode *goquery.Selection) {
-			rv.Category = messageNode.Find("span").Text()
-			rv.Title = messageNode.Find("strong").Text()
-			rv.Message = processMessage(messageNode.Text())
+			m.Category = messageNode.Find("span").Text()
+			m.Title = m.Category + messageNode.Find("strong").Text()
+			m.Message = processMessage(messageNode.Text())
 		})
 	})
 

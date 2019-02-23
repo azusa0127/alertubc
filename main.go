@@ -13,15 +13,15 @@ var err error
 var rss string
 
 func scrapDaemon() {
-	alert, err := scraper.ScrapeUBCAlert()
+	alerts, err := scraper.ScrapeUBCAlert()
 	if err == nil {
-		rss, err = feed.GenerateRSS(alert)
+		rss, err = feed.GenerateRSS(alerts)
 	}
 
 	for range time.Tick(time.Hour) {
-		alert, err = scraper.ScrapeUBCAlert()
+		alerts, err = scraper.ScrapeUBCAlert()
 		if err == nil {
-			rss, err = feed.GenerateRSS(alert)
+			rss, err = feed.GenerateRSS(alerts)
 		} else {
 			log.Println("[Error]", err.Error(), "@ScrapeUBCAlert()")
 		}
