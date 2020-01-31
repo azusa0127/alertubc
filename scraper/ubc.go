@@ -74,7 +74,8 @@ func parseTimeString(timeString string) time.Time {
 
 func processMessage(message string) string {
 	rv := []string{}
-	for _, sentence := range strings.Split(message[:strings.LastIndex(message, ".")], ".") {
+
+	for _, sentence := range strings.Split(message, ".") {
 		sentence = strings.TrimSpace(sentence)
 		if !strings.HasPrefix(sentence, "Due to current weather conditions, members") &&
 			!strings.HasPrefix(sentence, "Drive safely and") &&
