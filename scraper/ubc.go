@@ -15,7 +15,7 @@ import (
 const (
 	ubcURL = "https://www.ubc.ca"
 
-	timeStringFormat = "January 02, 2006 3:04 pm -0700"
+	timeStringFormat = "Jan. 02, 2006 3:04 pm MST"
 
 	requestTimeout = 10 * time.Second
 )
@@ -31,16 +31,13 @@ type UBCAlertMessage struct {
 func preprocessTimestring(ts string) (string, error) {
 	timeStrings := strings.Split(strings.TrimSpace(ts), " ")
 
-	// Strip off prefix
-	if timeStrings[0] == "Updated:" {
-		timeStrings = timeStrings[1:]
-	}
-
 	// Validate timestring length
-	if len(timeStrings) != 6 {
+	if len(timeStrings) != 8 {
 		// Invalid timeString, return for parseTimeString to handle
 		return "", fmt.Errorf("Invalid timeString <%s> encounted @preprocessTimestring", ts)
 	}
+	// Strip off prefix "Updated:" and "-"
+	timeStrings = append(timeStrings[1:4], timeStrings[5:]...)
 
 	// Format am/pm symbol
 	switch timeStrings[4] {
@@ -50,13 +47,6 @@ func preprocessTimestring(ts string) (string, error) {
 		timeStrings[4] = "pm"
 	}
 
-	// Format PST
-	switch timeStrings[5] {
-	case "PST":
-		timeStrings[5] = "-0800"
-	case "PDT":
-		timeStrings[5] = "-0700"
-	}
 	return strings.Join(timeStrings, " "), nil
 }
 
@@ -123,17 +113,17 @@ func ScrapeUBCAlert() (rv []*UBCAlertMessage, err error) {
 	}
 
 	rv = []*UBCAlertMessage{}
-	doc.Find("div.alert-content").First().Each(func(_ int, alertContent *goquery.Selection) {
+	doc.Find("div.alert-content").Each(func(_ int, alertContent *goquery.Selection) {
 		m := &UBCAlertMessage{Time: time.Now()}
 		rv = append(rv, m)
-		alertContent.Find("div.alert-date > em").Each(func(_ int, timeNode *goquery.Selection) {
+		if timeNode := alertContent.Find("div.alert-date").First(); timeNode != nil {
 			m.Time = parseTimeString(timeNode.Text())
-		})
-		alertContent.Find("div.alert-message").Each(func(_ int, messageNode *goquery.Selection) {
+		}
+		if messageNode := alertContent.Find("div.alert-message").First(); messageNode != nil {
 			m.Category = messageNode.Find("span").Text()
 			m.Title = m.Category + messageNode.Find("strong").Text()
 			m.Message = processMessage(messageNode.Text())
-		})
+		}
 	})
 
 	return
