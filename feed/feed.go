@@ -28,8 +28,7 @@ func GenerateRSS(alerts []*scraper.UBCAlertMessage) (string, error) {
 	channel := &feeds.Feed{
 		Title:       "UBC Campus Notifications",
 		Link:        &feeds.Link{Href: "https://www.ubc.ca/campus-notifications/"},
-		Description: alerts[0].Category,
-		Created:     alerts[0].Time,
+		Description: "Feed for UBC Campus Notifications",
 		Items:       []*feeds.Item{},
 	}
 
@@ -43,9 +42,12 @@ func GenerateRSS(alerts []*scraper.UBCAlertMessage) (string, error) {
 		if lastUpdated.Before(a.Time) {
 			lastUpdated = a.Time
 		}
+		if channel.Created.After(a.Time) {
+			channel.Created = a.Time
+		}
 	}
 
-	channel.Created = lastUpdated
+	channel.Updated = lastUpdated
 	lastRSS, err = channel.ToRss()
 	return lastRSS, err
 }
