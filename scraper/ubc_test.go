@@ -14,8 +14,8 @@ func Test_preprocessTimestring(t *testing.T) {
 		want string
 	}{
 		{"sample time string test",
-			args{"Updated: February 15, 2019 6:00 a.m. PST"},
-			"February 15, 2019 6:00 am -0800"},
+			args{"Updated: Jan. 31, 2020 – 11:27 a.m. PST"},
+			"Jan. 31, 2020 11:27 am PST"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
